@@ -248,7 +248,11 @@ export const HomeScreen: React.FC = () => {
             }}
           >
             <View style={styles.avatar}>
-              <User size={20} color={Colors.text.primary} />
+              {playerStats.avatar ? (
+                <Text style={styles.avatarEmoji}>{playerStats.avatar}</Text>
+              ) : (
+                <User size={20} color={Colors.text.primary} />
+              )}
             </View>
             <Text style={styles.userName}>{playerStats.playerName || 'Player'}</Text>
             <ChevronRight size={20} color={Colors.text.primary} />
@@ -620,6 +624,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 8,
+  },
+  avatarEmoji: {
+    fontSize: 18,
   },
   userName: {
     ...Typography.body.large,

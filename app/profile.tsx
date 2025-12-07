@@ -46,6 +46,7 @@ export default function ProfileScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const playerStats = useGameStore((s) => s.playerStats);
+  const currentTurn = useGameStore((s) => s.currentTurn);
   const updatePlayerName = useGameStore((s) => s.updatePlayerName);
   const updatePlayerAvatar = useGameStore((s) => s.updatePlayerAvatar);
   const resetGame = useGameStore((s) => s.resetGame);
@@ -92,8 +93,8 @@ export default function ProfileScreen() {
     setAvatarModalVisible(false);
   };
 
-  const handleResetGame = async () => {
-    await triggerHaptic('impactMedium');
+  const handleResetGame = () => {
+    triggerHaptic('impactMedium');
     Alert.alert(
       'Reset Game',
       'This will permanently delete all your progress and start a new game. This action cannot be undone.',
@@ -101,16 +102,20 @@ export default function ProfileScreen() {
         {
           text: 'Cancel',
           style: 'cancel',
-          onPress: async () => await triggerHaptic('impactLight'),
+          onPress: () => {
+            triggerHaptic('impactLight');
+          },
         },
         {
           text: 'Reset',
           style: 'destructive',
-          onPress: async () => {
-            await triggerHaptic('notificationSuccess');
+          onPress: () => {
+            triggerHaptic('notificationSuccess');
             resetGame();
-            showToast('Game reset successfully', 'success');
-            router.replace('/');
+            setTimeout(() => {
+              showToast('Game reset successfully', 'success');
+              router.replace('/');
+            }, 100);
           },
         },
       ]
@@ -177,7 +182,7 @@ export default function ProfileScreen() {
               </TouchableOpacity>
             </View>
             <Text style={styles.profileSubtitle}>
-              Playing • Turn {Math.floor((new Date().getTime() - new Date(playerStats.startDate).getTime()) / (7 * 24 * 60 * 60 * 1000))}
+              Playing • Turn {currentTurn?.turnNumber || 0}
             </Text>
           </LinearGradient>
 
@@ -343,7 +348,7 @@ export default function ProfileScreen() {
                 <View style={styles.infoContent}>
                   <Text style={styles.infoLabel}>Total Turns</Text>
                   <Text style={styles.infoValue}>
-                    {Math.floor((new Date().getTime() - new Date(playerStats.startDate).getTime()) / (7 * 24 * 60 * 60 * 1000))}
+                    {currentTurn?.turnNumber || 0}
                   </Text>
                 </View>
               </View>
