@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -6,6 +6,9 @@ import {
   ScrollView,
   TouchableOpacity,
   Pressable,
+  Modal,
+  TextInput,
+  Alert,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -23,19 +26,33 @@ import {
   CreditCard,
   Award,
   Clock,
+  Edit3,
+  RotateCcw,
+  X,
 } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import { BlurView } from 'expo-blur';
 import { useGameStore } from '../src/store/gameStore';
 import { triggerHaptic } from '../src/utils/haptics';
+import { showToast } from '../src/components/ToastManager';
 import { Colors } from '../src/theme/colors';
 import { Typography } from '../src/theme/typography';
 import { Spacing } from '../src/theme/spacing';
 import { BorderRadius } from '../src/theme/spacing';
 
+const AVATAR_EMOJIS = ['👤', '👨', '👩', '🧑', '👨‍💼', '👩‍💼', '🧑‍💼', '👨‍🎓', '👩‍🎓', '🧑‍🎓', '👨‍🏫', '👩‍🏫', '🧑‍🏫', '👨‍💻', '👩‍💻', '🧑‍💻'];
+
 export default function ProfileScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const playerStats = useGameStore((s) => s.playerStats);
+  const updatePlayerName = useGameStore((s) => s.updatePlayerName);
+  const updatePlayerAvatar = useGameStore((s) => s.updatePlayerAvatar);
+  const resetGame = useGameStore((s) => s.resetGame);
+
+  const [nameModalVisible, setNameModalVisible] = useState(false);
+  const [avatarModalVisible, setAvatarModalVisible] = useState(false);
+  const [newName, setNewName] = useState(playerStats.playerName || 'Player');
 
   const formatDate = (date: Date) => {
     return new Date(date).toLocaleDateString('en-US', {
@@ -54,6 +71,50 @@ export default function ProfileScreen() {
     if (months === 0) return 'Not employed';
     if (months < 1) return 'Less than 1 month';
     return `${months} month${months !== 1 ? 's' : ''}`;
+  };
+
+  const handleSaveName = async () => {
+    if (newName.trim().length === 0) {
+      await triggerHaptic('notificationError');
+      showToast('Name cannot be empty', 'error');
+      return;
+    }
+    await triggerHaptic('notificationSuccess');
+    updatePlayerName(newName.trim());
+    showToast('Name updated!', 'success');
+    setNameModalVisible(false);
+  };
+
+  const handleSelectAvatar = async (emoji: string) => {
+    await triggerHaptic('notificationSuccess');
+    updatePlayerAvatar(emoji);
+    showToast('Avatar updated!', 'success');
+    setAvatarModalVisible(false);
+  };
+
+  const handleResetGame = async () => {
+    await triggerHaptic('impactMedium');
+    Alert.alert(
+      'Reset Game',
+      'This will permanently delete all your progress and start a new game. This action cannot be undone.',
+      [
+        {
+          text: 'Cancel',
+          style: 'cancel',
+          onPress: async () => await triggerHaptic('impactLight'),
+        },
+        {
+          text: 'Reset',
+          style: 'destructive',
+          onPress: async () => {
+            await triggerHaptic('notificationSuccess');
+            resetGame();
+            showToast('Game reset successfully', 'success');
+            router.replace('/');
+          },
+        },
+      ]
+    );
   };
 
   return (
@@ -86,10 +147,35 @@ export default function ProfileScreen() {
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 1 }}
           >
-            <View style={styles.avatarLarge}>
-              <User size={48} color={Colors.surface.background} />
+            <TouchableOpacity
+              style={styles.avatarLarge}
+              onPress={async () => {
+                await triggerHaptic('impactLight');
+                setAvatarModalVisible(true);
+              }}
+            >
+              {playerStats.avatar ? (
+                <Text style={styles.avatarEmoji}>{playerStats.avatar}</Text>
+              ) : (
+                <User size={48} color={Colors.surface.background} />
+              )}
+              <View style={styles.editBadge}>
+                <Edit3 size={14} color={Colors.surface.background} />
+              </View>
+            </TouchableOpacity>
+            <View style={styles.nameRow}>
+              <Text style={styles.profileName}>{playerStats.playerName || 'Player'}</Text>
+              <TouchableOpacity
+                style={styles.editNameButton}
+                onPress={async () => {
+                  await triggerHaptic('impactLight');
+                  setNewName(playerStats.playerName || 'Player');
+                  setNameModalVisible(true);
+                }}
+              >
+                <Edit3 size={16} color={Colors.surface.background} />
+              </TouchableOpacity>
             </View>
-            <Text style={styles.profileName}>{playerStats.playerName || 'Player'}</Text>
             <Text style={styles.profileSubtitle}>
               Playing • Turn {Math.floor((new Date().getTime() - new Date(playerStats.startDate).getTime()) / (7 * 24 * 60 * 60 * 1000))}
             </Text>
@@ -264,6 +350,18 @@ export default function ProfileScreen() {
             </View>
           </View>
 
+          {/* Reset Game Section */}
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Danger Zone</Text>
+            <TouchableOpacity
+              style={styles.resetButton}
+              onPress={handleResetGame}
+            >
+              <RotateCcw size={20} color={Colors.status.error} />
+              <Text style={styles.resetButtonText}>Reset Game</Text>
+            </TouchableOpacity>
+          </View>
+
           <View style={{ height: Spacing.xxl }} />
         </ScrollView>
 
@@ -309,6 +407,97 @@ export default function ProfileScreen() {
           </Pressable>
         </View>
       </View>
+
+      {/* Name Edit Modal */}
+      <Modal
+        visible={nameModalVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setNameModalVisible(false)}
+      >
+        <BlurView intensity={40} style={styles.modalOverlay}>
+          <View style={styles.modalContainer}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Edit Name</Text>
+              <TouchableOpacity
+                onPress={async () => {
+                  await triggerHaptic('impactLight');
+                  setNameModalVisible(false);
+                }}
+              >
+                <X size={24} color={Colors.text.secondary} />
+              </TouchableOpacity>
+            </View>
+
+            <TextInput
+              style={styles.nameInput}
+              value={newName}
+              onChangeText={setNewName}
+              placeholder="Enter your name"
+              placeholderTextColor={Colors.text.tertiary}
+              maxLength={20}
+              autoFocus
+            />
+
+            <View style={styles.modalFooter}>
+              <TouchableOpacity
+                style={[styles.modalButton, styles.modalButtonSecondary]}
+                onPress={async () => {
+                  await triggerHaptic('impactLight');
+                  setNameModalVisible(false);
+                }}
+              >
+                <Text style={styles.modalButtonTextSecondary}>Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.modalButton, styles.modalButtonPrimary]}
+                onPress={handleSaveName}
+              >
+                <Text style={styles.modalButtonTextPrimary}>Save</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </BlurView>
+      </Modal>
+
+      {/* Avatar Select Modal */}
+      <Modal
+        visible={avatarModalVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setAvatarModalVisible(false)}
+      >
+        <BlurView intensity={40} style={styles.modalOverlay}>
+          <View style={styles.modalContainer}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Choose Avatar</Text>
+              <TouchableOpacity
+                onPress={async () => {
+                  await triggerHaptic('impactLight');
+                  setAvatarModalVisible(false);
+                }}
+              >
+                <X size={24} color={Colors.text.secondary} />
+              </TouchableOpacity>
+            </View>
+
+            <View style={styles.avatarGrid}>
+              {AVATAR_EMOJIS.map((emoji) => (
+                <TouchableOpacity
+                  key={emoji}
+                  style={[
+                    styles.avatarOption,
+                    playerStats.avatar === emoji && styles.avatarOptionSelected,
+                  ]}
+                  onPress={() => handleSelectAvatar(emoji)}
+                >
+                  <Text style={styles.avatarOptionEmoji}>{emoji}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </View>
+        </BlurView>
+      </Modal>
     </View>
   );
 }
@@ -439,5 +628,130 @@ const styles = StyleSheet.create({
   navLabel: {
     ...Typography.label.small,
     color: Colors.text.secondary,
+  },
+  avatarEmoji: {
+    fontSize: 48,
+  },
+  editBadge: {
+    position: 'absolute',
+    bottom: 0,
+    right: 0,
+    width: 28,
+    height: 28,
+    borderRadius: BorderRadius.full,
+    backgroundColor: Colors.gold.primary,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  nameRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.sm,
+    marginBottom: Spacing.xs,
+  },
+  editNameButton: {
+    width: 32,
+    height: 32,
+    borderRadius: BorderRadius.full,
+    backgroundColor: 'rgba(13, 13, 13, 0.3)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  resetButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(255, 59, 48, 0.1)',
+    borderWidth: 1,
+    borderColor: Colors.status.error,
+    borderRadius: BorderRadius.lg,
+    padding: Spacing.md,
+    gap: Spacing.sm,
+  },
+  resetButtonText: {
+    ...Typography.body.medium,
+    color: Colors.status.error,
+    fontWeight: '600' as any,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: Colors.overlay,
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: Spacing.lg,
+  },
+  modalContainer: {
+    width: '100%',
+    maxWidth: 400,
+    backgroundColor: Colors.surface.card.elevated,
+    borderRadius: BorderRadius.lg,
+    padding: Spacing.lg,
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: Spacing.lg,
+  },
+  modalTitle: {
+    ...Typography.heading.h3,
+    color: Colors.text.primary,
+  },
+  nameInput: {
+    ...Typography.body.large,
+    color: Colors.text.primary,
+    backgroundColor: Colors.surface.highlight,
+    borderRadius: BorderRadius.md,
+    padding: Spacing.md,
+    marginBottom: Spacing.lg,
+  },
+  modalFooter: {
+    flexDirection: 'row',
+    gap: Spacing.sm,
+  },
+  modalButton: {
+    flex: 1,
+    padding: Spacing.md,
+    borderRadius: BorderRadius.md,
+    alignItems: 'center',
+  },
+  modalButtonSecondary: {
+    backgroundColor: Colors.surface.highlight,
+  },
+  modalButtonPrimary: {
+    backgroundColor: Colors.gold.primary,
+  },
+  modalButtonTextSecondary: {
+    ...Typography.body.medium,
+    color: Colors.text.primary,
+    fontWeight: '600' as any,
+  },
+  modalButtonTextPrimary: {
+    ...Typography.body.medium,
+    color: Colors.surface.background,
+    fontWeight: '600' as any,
+  },
+  avatarGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: Spacing.sm,
+    justifyContent: 'center',
+  },
+  avatarOption: {
+    width: 64,
+    height: 64,
+    borderRadius: BorderRadius.md,
+    backgroundColor: Colors.surface.highlight,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 2,
+    borderColor: 'transparent',
+  },
+  avatarOptionSelected: {
+    borderColor: Colors.gold.primary,
+    backgroundColor: Colors.gold.glow,
+  },
+  avatarOptionEmoji: {
+    fontSize: 36,
   },
 });

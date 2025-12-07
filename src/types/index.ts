@@ -235,6 +235,7 @@ export interface IPlayerStats {
   // Identification
   playerId: string;
   playerName: string;
+  avatar?: string;              // Emoji avatar
   startDate: Date;
   currentDate: Date;
 

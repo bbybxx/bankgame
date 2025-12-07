@@ -44,6 +44,8 @@ interface GameState {
   purchaseVehicle: (vehicleId: string, method?: 'cash' | 'loan') => { success: boolean; message: string };
   buyInvestmentAction: (catalogItem: any, shareCount: number) => { success: boolean; message: string };
   sellInvestmentAction: (investment: any, shareCount: number) => { success: boolean; message: string; proceeds: number; gainLoss: number };
+  updatePlayerName: (name: string) => void;
+  updatePlayerAvatar: (avatar: string) => void;
   resetGame: () => void;
 }
 
@@ -444,6 +446,20 @@ export const useGameStore = create<GameState>()(
         });
         return result;
       },
+
+      updatePlayerName: (name: string) => set((state) => ({
+        playerStats: {
+          ...state.playerStats,
+          playerName: name,
+        },
+      })),
+
+      updatePlayerAvatar: (avatar: string) => set((state) => ({
+        playerStats: {
+          ...state.playerStats,
+          avatar: avatar,
+        },
+      })),
 
       resetGame: () => set({
         playerStats: createInitialPlayerStats(),
