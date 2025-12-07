@@ -10,6 +10,7 @@ import {
   TextInput,
   Alert,
 } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
@@ -111,11 +112,15 @@ export default function ProfileScreen() {
           style: 'destructive',
           onPress: () => {
             triggerHaptic('notificationSuccess');
-            resetGame();
-            setTimeout(() => {
+            // Жесткий сброс: очистить AsyncStorage полностью
+            AsyncStorage.clear().then(() => {
+              // После очистки вызвать resetGame для инициализации
+              resetGame();
               showToast('Game reset successfully', 'success');
               router.replace('/');
-            }, 100);
+            }).catch(() => {
+              showToast('Failed to reset game', 'error');
+            });
           },
         },
       ]
