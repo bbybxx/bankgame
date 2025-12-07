@@ -20,6 +20,7 @@ import {
   Wrench,
   Zap,
   ArrowUpRight,
+  MessageCircle,
 } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useGameStore } from '../src/store/gameStore';
@@ -378,9 +379,7 @@ export default function AssetsScreen() {
               router.push('/');
             }}
           >
-            <View style={styles.navIcon}>
-              <View style={styles.homeIconOutline} />
-            </View>
+            <HomeIcon size={24} color={Colors.text.secondary} />
             <Text style={styles.navLabel}>Home</Text>
           </Pressable>
 
@@ -391,9 +390,7 @@ export default function AssetsScreen() {
               router.push('/investments');
             }}
           >
-            <View style={styles.navIcon}>
-              <Text style={styles.navIconText}>📈</Text>
-            </View>
+            <TrendingUp size={24} color={Colors.text.secondary} />
             <Text style={styles.navLabel}>Investments</Text>
           </Pressable>
 
@@ -404,9 +401,7 @@ export default function AssetsScreen() {
               router.push('/chats');
             }}
           >
-            <View style={styles.navIcon}>
-              <Text style={styles.navIconText}>💬</Text>
-            </View>
+            <MessageCircle size={24} color={Colors.text.secondary} />
             <Text style={styles.navLabel}>Chats</Text>
           </Pressable>
         </View>
@@ -638,40 +633,21 @@ const styles = StyleSheet.create({
   // Bottom Navigation
   bottomNav: {
     flexDirection: 'row',
-    justifyContent: 'space-around',
-    alignItems: 'center',
-    paddingVertical: 8,
-    paddingBottom: 12,
-    backgroundColor: Colors.surface.card.elevated,
-    borderTopWidth: 1,
-    borderTopColor: 'rgba(255, 255, 255, 0.05)',
+    backgroundColor: Colors.surface.background,
+    paddingTop: Spacing.sm,
+    paddingHorizontal: Spacing.sm,
+    borderTopWidth: 0.5,
+    borderTopColor: Colors.border.default,
   },
   navButton: {
+    flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 2,
-    paddingHorizontal: 12,
-  },
-  navIcon: {
-    width: 28,
-    height: 28,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 2,
-  },
-  homeIconOutline: {
-    width: 18,
-    height: 18,
-    borderWidth: 2,
-    borderColor: Colors.text.secondary,
-    borderRadius: 4,
-  },
-  navIconText: {
-    fontSize: 18,
+    paddingVertical: Spacing.sm,
   },
   navLabel: {
     ...Typography.label.small,
     color: Colors.text.secondary,
-    fontSize: 9,
+    marginTop: 4,
   },
 });

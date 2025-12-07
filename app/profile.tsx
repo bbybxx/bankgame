@@ -11,6 +11,7 @@ import {
   Alert,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as Updates from 'expo-updates';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
@@ -94,33 +95,33 @@ export default function ProfileScreen() {
     setAvatarModalVisible(false);
   };
 
-  const handleResetGame = () => {
-    triggerHaptic('impactMedium');
+  const handleResetGame = async () => {
+    await triggerHaptic('impactMedium');
     Alert.alert(
       'Reset Game',
-      'This will permanently delete all your progress and start a new game. This action cannot be undone.',
+      'This will permanently delete all your progress and restart the app. This action cannot be undone.',
       [
         {
           text: 'Cancel',
           style: 'cancel',
-          onPress: () => {
-            triggerHaptic('impactLight');
+          onPress: async () => {
+            await triggerHaptic('impactLight');
           },
         },
         {
           text: 'Reset',
           style: 'destructive',
-          onPress: () => {
-            triggerHaptic('notificationSuccess');
-            // Жесткий сброс: очистить AsyncStorage полностью
-            AsyncStorage.clear().then(() => {
-              // После очистки вызвать resetGame для инициализации
-              resetGame();
-              showToast('Game reset successfully', 'success');
-              router.replace('/');
-            }).catch(() => {
+          onPress: async () => {
+            try {
+              await triggerHaptic('notificationSuccess');
+              // Полная очистка AsyncStorage
+              await AsyncStorage.clear();
+              // Перезагрузка приложения
+              await Updates.reloadAsync();
+            } catch (error) {
+              console.error('Reset error:', error);
               showToast('Failed to reset game', 'error');
-            });
+            }
           },
         },
       ]
@@ -384,9 +385,7 @@ export default function ProfileScreen() {
               router.push('/');
             }}
           >
-            <View style={styles.navIconContainer}>
-              <HomeIconLucide size={22} color={Colors.text.secondary} />
-            </View>
+            <HomeIconLucide size={24} color={Colors.text.secondary} />
             <Text style={styles.navLabel}>Home</Text>
           </Pressable>
 
@@ -397,9 +396,7 @@ export default function ProfileScreen() {
               router.push('/investments');
             }}
           >
-            <View style={styles.navIconContainer}>
-              <TrendingUp size={22} color={Colors.text.secondary} />
-            </View>
+            <TrendingUp size={24} color={Colors.text.secondary} />
             <Text style={styles.navLabel}>Investments</Text>
           </Pressable>
 
@@ -410,9 +407,7 @@ export default function ProfileScreen() {
               router.push('/chats');
             }}
           >
-            <View style={styles.navIconContainer}>
-              <Mail size={22} color={Colors.text.secondary} />
-            </View>
+            <Mail size={24} color={Colors.text.secondary} />
             <Text style={styles.navLabel}>Chats</Text>
           </Pressable>
         </View>
@@ -615,29 +610,25 @@ const styles = StyleSheet.create({
   },
   bottomNav: {
     flexDirection: 'row',
-    backgroundColor: Colors.surface.card.default,
-    paddingVertical: Spacing.sm,
-    paddingHorizontal: Spacing.md,
-    borderTopWidth: 1,
+    backgroundColor: Colors.surface.background,
+    paddingTop: Spacing.sm,
+    paddingHorizontal: Spacing.sm,
+    borderTopWidth: 0.5,
     borderTopColor: Colors.border.default,
   },
   navItem: {
     flex: 1,
     alignItems: 'center',
-    paddingVertical: Spacing.xs,
+    justifyContent: 'center',
+    paddingVertical: Spacing.sm,
   },
   navIconContainer: {
-    width: 40,
-    height: 40,
-    borderRadius: BorderRadius.md,
-    backgroundColor: Colors.surface.highlight,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 4,
+    // Removed - icons displayed directly
   },
   navLabel: {
     ...Typography.label.small,
     color: Colors.text.secondary,
+    marginTop: 4,
   },
   avatarEmoji: {
     fontSize: 48,
