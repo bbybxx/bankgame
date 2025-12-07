@@ -11,7 +11,6 @@ import {
   Alert,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import * as Updates from 'expo-updates';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
@@ -116,8 +115,11 @@ export default function ProfileScreen() {
               await triggerHaptic('notificationSuccess');
               // Полная очистка AsyncStorage
               await AsyncStorage.clear();
-              // Перезагрузка приложения
-              await Updates.reloadAsync();
+              showToast('Game reset! App will reload...', 'success');
+              // Переход на несуществующий маршрут - Expo автоматически перезагрузит
+              setTimeout(() => {
+                router.replace('/___reset___force___reload___');
+              }, 500);
             } catch (error) {
               console.error('Reset error:', error);
               showToast('Failed to reset game', 'error');
