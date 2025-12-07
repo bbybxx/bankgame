@@ -9,6 +9,7 @@ import {
   Pressable,
 } from 'react-native';
 import { useRouter } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { 
   ArrowLeft, 
   Home as HomeIcon,
@@ -31,6 +32,7 @@ import { BorderRadius } from '../src/theme/spacing';
 
 export default function AssetsScreen() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const playerStats = useGameStore((s) => s.playerStats);
 
   // Get current housing details
@@ -72,7 +74,7 @@ export default function AssetsScreen() {
   }, [playerStats.currentVehicle?.purchaseDate]);
 
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={[styles.container, { paddingTop: insets.top }]}>
       <View style={{ flex: 1 }}>
         {/* Header */}
         <View style={styles.header}>
@@ -409,7 +411,7 @@ export default function AssetsScreen() {
           </Pressable>
         </View>
       </View>
-    </SafeAreaView>
+    </View>
   );
 }
 

@@ -10,6 +10,7 @@ import {
   Pressable,
 } from 'react-native';
 import { useRouter } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ArrowLeft, Home as HomeIcon, Car, ShoppingBag, ChevronRight } from 'lucide-react-native';
 import Animated, {
   useSharedValue,
@@ -33,6 +34,7 @@ type Category = 'housing' | 'vehicles';
 
 export default function MarketplaceScreen() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const [activeCategory, setActiveCategory] = useState<Category>('housing');
   const playerStats = useGameStore((s) => s.playerStats);
     const purchaseHousing = useGameStore((s) => s.purchaseHousing);
@@ -147,7 +149,7 @@ export default function MarketplaceScreen() {
   const currentItemId = activeCategory === 'housing' ? currentHousingId : currentVehicleId;
 
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={[styles.container, { paddingTop: insets.top }]}>
       <Animated.View style={[{ flex: 1 }, pageAnimatedStyle]}>
         {/* Header */}
         <View style={styles.header}>
@@ -254,7 +256,7 @@ export default function MarketplaceScreen() {
         </Pressable>
       </View>
       </Animated.View>
-    </SafeAreaView>
+    </View>
   );
 }
 

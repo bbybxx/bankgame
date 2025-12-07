@@ -11,6 +11,7 @@ import {
   ScrollView,
   Dimensions,
   Pressable,
+  RefreshControl,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -19,6 +20,8 @@ import Animated, {
   useSharedValue,
   withSpring,
   withTiming,
+  withSequence,
+  runOnJS,
 } from 'react-native-reanimated';
 import {
   User,
@@ -41,6 +44,11 @@ export const HomeScreen: React.FC = () => {
   const router = useRouter();
   const playerStats = useGameStore((s) => s.playerStats);
   const notifications = useGameStore((s) => s.notifications);
+  const nextTurn = useGameStore((s) => s.nextTurn);
+  
+  const [refreshing, setRefreshing] = React.useState(false);
+  const refreshOpacity = useSharedValue(0);
+  const refreshScale = useSharedValue(0.8);
 
   const screenWidth = Dimensions.get('window').width;
   const CARD_WIDTH = Math.min(CARD_BASE_WIDTH, screenWidth * 0.38);
@@ -189,12 +197,46 @@ export const HomeScreen: React.FC = () => {
     ), [transactions]
   );
 
+  const onRefresh = React.useCallback(async () => {
+    setRefreshing(true);
+    await triggerHaptic('impactMedium');
+    
+    // Анимация появления
+    refreshOpacity.value = withTiming(1, { duration: 150 });
+    refreshScale.value = withSequence(
+      withSpring(1.1, { damping: 8 }),
+      withSpring(1, { damping: 10 })
+    );
+    
+    // Выполняем nextTurn
+    await new Promise(resolve => setTimeout(resolve, 300));
+    nextTurn();
+    await triggerHaptic('notificationSuccess');
+    
+    // Анимация исчезновения
+    await new Promise(resolve => setTimeout(resolve, 200));
+    refreshOpacity.value = withTiming(0, { duration: 150 });
+    refreshScale.value = withTiming(0.8, { duration: 150 });
+    
+    await new Promise(resolve => setTimeout(resolve, 200));
+    setRefreshing(false);
+  }, [nextTurn, refreshOpacity, refreshScale]);
+
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
       <ScrollView
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor={Colors.gold.primary}
+            colors={[Colors.gold.primary]}
+            progressBackgroundColor={Colors.surface.card.default}
+          />
+        }
       >
         {/* Header */}
         <View style={styles.header}>

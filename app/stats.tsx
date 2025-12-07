@@ -10,6 +10,7 @@ import {
   Pressable,
 } from 'react-native';
 import { useRouter } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { 
   ArrowLeft, 
   TrendingUp, 
@@ -34,8 +35,9 @@ import { BorderRadius } from '../src/theme/spacing';
 
 const { width: screenWidth } = Dimensions.get('window');
 
-export default function PlayerStatsScreen() {
+export default function StatsScreen() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const playerStats = useGameStore((s) => s.playerStats);
   const currentTurn = useGameStore((s) => s.currentTurn);
 
@@ -70,7 +72,7 @@ export default function PlayerStatsScreen() {
   const savingsRate = playerStats.income > 0 ? (monthlySavings / playerStats.income) * 100 : 0;
 
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={[styles.container, { paddingTop: insets.top }]}>
       <View style={{ flex: 1 }}>
         {/* Header */}
         <View style={styles.header}>
@@ -265,7 +267,7 @@ export default function PlayerStatsScreen() {
           </Pressable>
         </View>
       </View>
-    </SafeAreaView>
+    </View>
   );
 }
 

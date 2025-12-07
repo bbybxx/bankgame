@@ -9,6 +9,7 @@ import {
   Pressable,
 } from 'react-native';
 import { useRouter } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { 
   ArrowLeft,
   MessageSquare,
@@ -25,6 +26,7 @@ import { BorderRadius } from '../src/theme/spacing';
 
 export default function ChatsScreen() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const chats = useGameStore((s) => s.chats);
 
   const handleChatPress = async (chatId: string) => {
@@ -58,7 +60,7 @@ export default function ChatsScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={[styles.container, { paddingTop: insets.top }]}>
       <View style={{ flex: 1 }}>
         {/* Header */}
         <View style={styles.header}>
@@ -206,7 +208,7 @@ export default function ChatsScreen() {
           </Pressable>
         </View>
       </View>
-    </SafeAreaView>
+    </View>
   );
 }
 

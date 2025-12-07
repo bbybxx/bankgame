@@ -13,6 +13,7 @@ import {
   Platform,
 } from 'react-native';
 import { useRouter } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { 
   ArrowLeft, 
   TrendingUp,
@@ -42,6 +43,7 @@ type Tab = 'portfolio' | 'market';
 
 export default function InvestmentsScreen() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const [activeTab, setActiveTab] = useState<Tab>('portfolio');
   const [buyModalVisible, setBuyModalVisible] = useState(false);
   const [sellModalVisible, setSellModalVisible] = useState(false);
@@ -178,7 +180,7 @@ export default function InvestmentsScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={[styles.container, { paddingTop: insets.top }]}>
       <View style={{ flex: 1 }}>
         {/* Header */}
         <View style={styles.header}>
@@ -777,7 +779,7 @@ export default function InvestmentsScreen() {
           </KeyboardAvoidingView>
         </BlurView>
       </Modal>
-    </SafeAreaView>
+    </View>
   );
 }
 

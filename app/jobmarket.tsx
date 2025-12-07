@@ -10,6 +10,7 @@ import {
   Pressable,
 } from 'react-native';
 import { useRouter } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ArrowLeft, Briefcase, Clock, TrendingUp, AlertCircle } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useGameStore } from '../src/store/gameStore';
@@ -40,6 +41,7 @@ interface JobListing {
 
 export default function JobMarketScreen() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const playerStats = useGameStore((s) => s.playerStats);
   const applyForJob = useGameStore((s) => s.applyForJob);
   const [selectedJobId, setSelectedJobId] = useState<string | null>(null);
@@ -97,7 +99,7 @@ export default function JobMarketScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={[styles.container, { paddingTop: insets.top }]}>
       <View style={{ flex: 1 }}>
         {/* Header */}
         <View style={styles.header}>
@@ -294,7 +296,7 @@ export default function JobMarketScreen() {
           </Pressable>
         </View>
       </View>
-    </SafeAreaView>
+    </View>
   );
 }
 
