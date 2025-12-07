@@ -8,7 +8,6 @@ import {
   Pressable,
   Modal,
   TextInput,
-  Alert,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from 'expo-router';
@@ -54,6 +53,7 @@ export default function ProfileScreen() {
 
   const [nameModalVisible, setNameModalVisible] = useState(false);
   const [avatarModalVisible, setAvatarModalVisible] = useState(false);
+  const [resetModalVisible, setResetModalVisible] = useState(false);
   const [newName, setNewName] = useState(playerStats.playerName || 'Player');
 
   const formatDate = (date: Date) => {
@@ -97,47 +97,31 @@ export default function ProfileScreen() {
   const handleResetGame = () => {
     console.log('Reset button clicked!');
     triggerHaptic('impactMedium');
+    setResetModalVisible(true);
+  };
+
+  const confirmReset = () => {
+    console.log('Reset confirmed!');
+    triggerHaptic('notificationSuccess');
+    setResetModalVisible(false);
     
-    Alert.alert(
-      'Reset Game',
-      'This will permanently delete all your progress and restart the app. This action cannot be undone.',
-      [
-        {
-          text: 'Cancel',
-          style: 'cancel',
-          onPress: () => {
-            console.log('Cancel pressed');
-            triggerHaptic('impactLight');
-          },
-        },
-        {
-          text: 'Reset',
-          style: 'destructive',
-          onPress: () => {
-            console.log('Reset confirmed!');
-            triggerHaptic('notificationSuccess');
-            
-            // Полная очистка AsyncStorage
-            console.log('Clearing AsyncStorage...');
-            AsyncStorage.clear()
-              .then(() => {
-                console.log('AsyncStorage cleared successfully');
-                showToast('Game reset! App will reload...', 'success');
-                
-                // Переход на несуществующий маршрут
-                console.log('Navigating to error route...');
-                setTimeout(() => {
-                  router.replace('/___reset___force___reload___');
-                }, 500);
-              })
-              .catch((error) => {
-                console.error('Reset error:', error);
-                showToast('Failed to reset game', 'error');
-              });
-          },
-        },
-      ]
-    );
+    // Полная очистка AsyncStorage
+    console.log('Clearing AsyncStorage...');
+    AsyncStorage.clear()
+      .then(() => {
+        console.log('AsyncStorage cleared successfully');
+        showToast('Game reset! App will reload...', 'success');
+        
+        // Переход на несуществующий маршрут
+        console.log('Navigating to error route...');
+        setTimeout(() => {
+          router.replace('/___reset___force___reload___');
+        }, 500);
+      })
+      .catch((error) => {
+        console.error('Reset error:', error);
+        showToast('Failed to reset game', 'error');
+      });
   };
 
   return (
@@ -515,6 +499,53 @@ export default function ProfileScreen() {
           </View>
         </BlurView>
       </Modal>
+
+      {/* Reset Confirmation Modal */}
+      <Modal
+        visible={resetModalVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setResetModalVisible(false)}
+      >
+        <BlurView intensity={40} style={styles.modalOverlay}>
+          <View style={styles.modalContainer}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Reset Game</Text>
+              <TouchableOpacity
+                onPress={async () => {
+                  await triggerHaptic('impactLight');
+                  setResetModalVisible(false);
+                }}
+              >
+                <X size={24} color={Colors.text.secondary} />
+              </TouchableOpacity>
+            </View>
+
+            <Text style={styles.resetWarningText}>
+              This will permanently delete all your progress and restart the app. This action cannot be undone.
+            </Text>
+
+            <View style={styles.modalFooter}>
+              <TouchableOpacity
+                style={[styles.modalButton, styles.modalButtonSecondary]}
+                onPress={async () => {
+                  await triggerHaptic('impactLight');
+                  setResetModalVisible(false);
+                }}
+              >
+                <Text style={styles.modalButtonTextSecondary}>Cancel</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[styles.modalButton, styles.resetButtonDanger]}
+                onPress={confirmReset}
+              >
+                <Text style={styles.modalButtonTextDanger}>Reset Game</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </BlurView>
+      </Modal>
     </View>
   );
 }
@@ -742,6 +773,20 @@ const styles = StyleSheet.create({
   modalButtonTextPrimary: {
     ...Typography.body.medium,
     color: Colors.surface.background,
+    fontWeight: '600' as any,
+  },
+  resetWarningText: {
+    ...Typography.body.medium,
+    color: Colors.text.secondary,
+    marginBottom: Spacing.lg,
+    lineHeight: 22,
+  },
+  resetButtonDanger: {
+    backgroundColor: Colors.status.error,
+  },
+  modalButtonTextDanger: {
+    ...Typography.body.medium,
+    color: Colors.text.primary,
     fontWeight: '600' as any,
   },
   avatarGrid: {
