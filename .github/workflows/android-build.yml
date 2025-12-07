@@ -19,6 +19,7 @@ jobs:
     
     env:
       EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+      GRADLE_OPTS: -Dorg.gradle.jvmargs="-Xmx4096m -XX:MaxMetaspaceSize=1024m"
     
     steps:
       - name: 🏗 Setup repo
