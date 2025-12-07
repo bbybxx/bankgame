@@ -94,8 +94,8 @@ export default function ProfileScreen() {
     setAvatarModalVisible(false);
   };
 
-  const handleResetGame = async () => {
-    await triggerHaptic('impactMedium');
+  const handleResetGame = () => {
+    triggerHaptic('impactMedium');
     Alert.alert(
       'Reset Game',
       'This will permanently delete all your progress and restart the app. This action cannot be undone.',
@@ -103,27 +103,26 @@ export default function ProfileScreen() {
         {
           text: 'Cancel',
           style: 'cancel',
-          onPress: async () => {
-            await triggerHaptic('impactLight');
+          onPress: () => {
+            triggerHaptic('impactLight');
           },
         },
         {
           text: 'Reset',
           style: 'destructive',
-          onPress: async () => {
-            try {
-              await triggerHaptic('notificationSuccess');
-              // Полная очистка AsyncStorage
-              await AsyncStorage.clear();
+          onPress: () => {
+            triggerHaptic('notificationSuccess');
+            // Полная очистка AsyncStorage
+            AsyncStorage.clear().then(() => {
               showToast('Game reset! App will reload...', 'success');
               // Переход на несуществующий маршрут - Expo автоматически перезагрузит
               setTimeout(() => {
                 router.replace('/___reset___force___reload___');
               }, 500);
-            } catch (error) {
+            }).catch((error) => {
               console.error('Reset error:', error);
               showToast('Failed to reset game', 'error');
-            }
+            });
           },
         },
       ]
