@@ -31,6 +31,9 @@ import {
   Briefcase,
   Sparkles,
   Wallet,
+  TrendingUp,
+  MessageCircle,
+  Home as HomeIcon,
 } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
 import { Colors, Typography, Spacing, EliteShadows } from '../theme';
@@ -556,9 +559,7 @@ export const HomeScreen: React.FC = () => {
             await triggerHaptic('impactLight');
           }}
         >
-          <View style={styles.navIconActive}>
-            <View style={styles.homeIcon} />
-          </View>
+          <HomeIcon size={24} color={Colors.gold.primary} />
           <Text style={styles.navLabelActive}>Home</Text>
         </Pressable>
 
@@ -569,9 +570,7 @@ export const HomeScreen: React.FC = () => {
             router.push('/investments');
           }}
         >
-          <View style={styles.navIcon}>
-            <Text style={styles.navIconText}>📈</Text>
-          </View>
+          <TrendingUp size={24} color={Colors.text.secondary} />
           <Text style={styles.navLabel}>Investments</Text>
         </Pressable>
 
@@ -582,9 +581,7 @@ export const HomeScreen: React.FC = () => {
             router.push('/chats');
           }}
         >
-          <View style={styles.navIcon}>
-            <Text style={styles.navIconText}>💬</Text>
-          </View>
+          <MessageCircle size={24} color={Colors.text.secondary} />
           <Text style={styles.navLabel}>Chats</Text>
         </Pressable>
       </View>
@@ -966,51 +963,27 @@ const styles = StyleSheet.create({
   // Bottom Nav
   bottomNav: {
     flexDirection: 'row',
-    justifyContent: 'space-around',
-    paddingVertical: 8,
-    paddingBottom: 12,
     backgroundColor: Colors.surface.background,
-    borderTopWidth: 1,
+    paddingTop: Spacing.sm,
+    paddingHorizontal: Spacing.sm,
+    borderTopWidth: 0.5,
     borderTopColor: Colors.border.default,
   },
   navButton: {
-    alignItems: 'center',
-    paddingVertical: 2,
-  },
-  navIcon: {
-    width: 28,
-    height: 28,
+    flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  navIconActive: {
-    width: 28,
-    height: 28,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: `${Colors.gold.primary}15`,
-    borderRadius: 6,
-  },
-  homeIcon: {
-    width: 18,
-    height: 18,
-    backgroundColor: Colors.gold.primary,
-    borderRadius: 4,
-  },
-  navIconText: {
-    fontSize: 18,
+    paddingVertical: Spacing.sm,
   },
   navLabel: {
-    fontSize: 9,
-    fontWeight: '400',
+    ...Typography.label.small,
     color: Colors.text.secondary,
-    marginTop: 2,
+    marginTop: 4,
   },
   navLabelActive: {
-    fontSize: 9,
-    fontWeight: '600',
+    ...Typography.label.small,
     color: Colors.gold.primary,
-    marginTop: 2,
+    marginTop: 4,
   },
 
   bottomSpacer: {

@@ -95,7 +95,9 @@ export default function ProfileScreen() {
   };
 
   const handleResetGame = () => {
+    console.log('Reset button clicked!');
     triggerHaptic('impactMedium');
+    
     Alert.alert(
       'Reset Game',
       'This will permanently delete all your progress and restart the app. This action cannot be undone.',
@@ -104,6 +106,7 @@ export default function ProfileScreen() {
           text: 'Cancel',
           style: 'cancel',
           onPress: () => {
+            console.log('Cancel pressed');
             triggerHaptic('impactLight');
           },
         },
@@ -111,18 +114,26 @@ export default function ProfileScreen() {
           text: 'Reset',
           style: 'destructive',
           onPress: () => {
+            console.log('Reset confirmed!');
             triggerHaptic('notificationSuccess');
+            
             // Полная очистка AsyncStorage
-            AsyncStorage.clear().then(() => {
-              showToast('Game reset! App will reload...', 'success');
-              // Переход на несуществующий маршрут - Expo автоматически перезагрузит
-              setTimeout(() => {
-                router.replace('/___reset___force___reload___');
-              }, 500);
-            }).catch((error) => {
-              console.error('Reset error:', error);
-              showToast('Failed to reset game', 'error');
-            });
+            console.log('Clearing AsyncStorage...');
+            AsyncStorage.clear()
+              .then(() => {
+                console.log('AsyncStorage cleared successfully');
+                showToast('Game reset! App will reload...', 'success');
+                
+                // Переход на несуществующий маршрут
+                console.log('Navigating to error route...');
+                setTimeout(() => {
+                  router.replace('/___reset___force___reload___');
+                }, 500);
+              })
+              .catch((error) => {
+                console.error('Reset error:', error);
+                showToast('Failed to reset game', 'error');
+              });
           },
         },
       ]
